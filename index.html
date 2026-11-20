@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -13,8 +13,8 @@
   --mint:#eef8f8; --ic:#5d5fb0;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{background:#e9d9e0}
-body{font-family:'Pretendard',sans-serif;color:#4a3a44;padding:10px 0;overflow-x:hidden}
+html,body{background:#f1cdda;margin:0;height:100%}
+body{font-family:'Pretendard',sans-serif;color:#4a3a44;padding:0;overflow-x:hidden}
 #fitOuter{width:100%;overflow:hidden;position:relative}
 #fit{transform-origin:top left;position:absolute;top:0;left:0}
 button{font-family:inherit}
@@ -22,7 +22,7 @@ button{font-family:inherit}
 svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
 /* ═════ 창 ═════ */
-.win{width:1220px;border:1px solid #d4b6c3;background:#f6d6e2;box-shadow:0 14px 40px rgba(120,60,90,.25);overflow:hidden}
+.win{width:1220px;background:#f6d6e2;overflow:hidden}
 .titlebar{display:flex;align-items:center;gap:8px;height:34px;padding:0 6px 0 10px;background:linear-gradient(#fbe8ef,#f3d2df);border-bottom:1px solid #e2bccb;font-size:14px;color:#3d2f38}
 .titlebar .ico{color:#6a5fb8;font-size:16px}
 .titlebar .ttl{flex:1;font-weight:600;outline:none}
@@ -42,7 +42,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 .adminbar .note{font-size:11px;opacity:.75}
 
 /* ═════ 장면 ═════ */
-.scene{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 120px minmax(0,560px);grid-template-rows:1fr auto;gap:0 10px;padding:30px 22px 14px;min-height:790px}
+.scene{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 120px minmax(0,560px);grid-template-rows:1fr auto;gap:0 10px;padding:22px 16px 8px;min-height:700px}
 .room{position:absolute;inset:0;overflow:hidden;z-index:0;background:linear-gradient(180deg,#f6dbe5 0%,#f1cdda 55%,#eab9cb 100%)}
 .room .ceil{position:absolute;left:0;right:0;top:0;height:8%;background:linear-gradient(#f9e6ed,#f3d3df)}
 .room .lamp{position:absolute;left:30%;top:0;width:2px;height:12%;background:#e3c7d1}
@@ -59,9 +59,9 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 .room .floor{position:absolute;left:0;right:0;bottom:0;height:6%;background:#e6b7c8}
 
 /* 전신 + 프롬프트 카드 */
-.stage{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:10px;align-items:center}
-.figure{position:relative;height:640px;display:flex;align-items:flex-end;justify-content:center}
-.figure img{position:relative;z-index:2;max-height:620px;max-width:100%;object-fit:contain;filter:drop-shadow(0 10px 10px rgba(110,50,80,.28));transition:opacity .2s,transform .35s}
+.stage{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:10px;align-items:center}
+.figure{position:relative;height:590px;display:flex;align-items:flex-end;justify-content:center}
+.figure img{position:relative;z-index:2;max-height:575px;max-width:100%;object-fit:contain;filter:drop-shadow(0 10px 10px rgba(110,50,80,.28));transition:opacity .2s,transform .35s}
 .figure img.flip{transform:scaleX(-1)}
 .figure .shadow{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:130px;height:18px;border-radius:50%;background:rgba(150,80,110,.25);filter:blur(4px)}
 
@@ -191,6 +191,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 .gate button{margin-top:14px;width:100%;border:0;border-radius:30px;padding:11px;font-weight:800;font-size:14px;color:#fff;cursor:pointer;background:linear-gradient(#7c84cc,#5a60ad);box-shadow:0 3px 0 #3f448a}
 .gate.shake .gbox{animation:shake .35s}
 @keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.rotate-tip{text-align:center;margin-top:14px;font-size:13px;font-weight:700;color:#a06b84}
 .toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);opacity:0;transition:.25s;z-index:60;background:#fff;color:var(--navy);font-weight:700;font-size:14px;padding:10px 18px;border-radius:30px;box-shadow:0 0 0 2px var(--p2),0 6px 16px rgba(120,60,90,.25)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .modal{position:fixed;inset:0;z-index:70;background:rgba(80,40,60,.35);display:grid;place-items:center}
@@ -316,6 +317,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 </div>
 
 </div></div>
+<div class="rotate-tip" id="rotateTip" hidden>📱 휴대폰을 가로로 돌리면 크게 보여요</div>
 <div class="toast" id="toast"></div>
 <div class="gate" id="gate" hidden>
   <div class="gbox">
@@ -628,10 +630,13 @@ $('exportBtn').onclick=()=>{
 /* 가로 화면 그대로, 화면 크기에 맞춰 통째로 줄여요 */
 function fit(){
   const box=$('fit'),w=box.firstElementChild;
-  const s=Math.min(1,(window.innerWidth-8)/1220,(window.innerHeight-20)/w.offsetHeight);
+  const W=document.documentElement.clientWidth,H=window.innerHeight;
+  const s=Math.min(W/1220,H/w.offsetHeight);
   box.style.transform=`scale(${s})`;
   box.style.width='1220px';
   $('fitOuter').style.height=w.offsetHeight*s+'px';
+  $('fitOuter').style.marginTop=Math.max(0,(H-w.offsetHeight*s)/2)+'px';
+  $('rotateTip').hidden=!(H>W*1.15);
   box.style.left=Math.max(0,(document.documentElement.clientWidth-1220*s)/2)+'px';
 }
 window.addEventListener('resize',fit);window.addEventListener('load',fit);
