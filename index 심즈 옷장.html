@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dress Room</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#22246a; --lav:#8f86c4; --lav2:#c9c2ea;
+  --p1:#fbe4ec; --p2:#f0bfd0; --p3:#dc9ab4; --p4:#c27795;
+  --mint:#eef8f8; --ic:#5d5fb0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#e9d9e0}
+body{font-family:'Pretendard',sans-serif;color:#4a3a44;padding:10px 0;overflow-x:hidden}
+#fit{transform-origin:top left}
+button{font-family:inherit}
+[hidden]{display:none!important}
+svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+/* ═════ 창 ═════ */
+.win{width:1220px;border:1px solid #d4b6c3;background:#f6d6e2;box-shadow:0 14px 40px rgba(120,60,90,.25);overflow:hidden}
+.titlebar{display:flex;align-items:center;gap:8px;height:34px;padding:0 6px 0 10px;background:linear-gradient(#fbe8ef,#f3d2df);border-bottom:1px solid #e2bccb;font-size:14px;color:#3d2f38}
+.titlebar .ico{color:#6a5fb8;font-size:16px}
+.titlebar .ttl{flex:1;font-weight:600;outline:none}
+.titlebar .ctl{display:flex}
+.titlebar .ctl span,.titlebar .ctl button{width:40px;height:34px;display:grid;place-items:center;color:#6b5a64;font-size:14px;background:none;border:0;cursor:pointer}
+.titlebar .ctl button{font-size:16px}
+.titlebar .ctl button:hover{background:#f0c6d6}
+
+.adminbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 10px;background:#3b3570;color:#fff;font-size:13px}
+.adminbar b{font-family:'Nunito';letter-spacing:1px;margin-right:4px}
+.adminbar button{border:0;border-radius:20px;padding:6px 13px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;color:#3b3570}
+.adminbar button.hot{background:#f6bcd1;color:#4a1f35}
+.adminbar .sp{flex:1}
+.adminbar .note{font-size:11px;opacity:.75}
+
+/* ═════ 장면 ═════ */
+.scene{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 120px minmax(0,560px);grid-template-rows:1fr auto;gap:0 10px;padding:30px 22px 14px;min-height:790px}
+.room{position:absolute;inset:0;overflow:hidden;z-index:0;background:linear-gradient(180deg,#f6dbe5 0%,#f1cdda 55%,#eab9cb 100%)}
+.room .ceil{position:absolute;left:0;right:0;top:0;height:8%;background:linear-gradient(#f9e6ed,#f3d3df)}
+.room .lamp{position:absolute;left:30%;top:0;width:2px;height:12%;background:#e3c7d1}
+.room .lamp::after{content:"";position:absolute;bottom:-8px;left:-6px;width:14px;height:12px;border-radius:50% 50% 40% 40%;background:#fff;box-shadow:0 0 18px 6px rgba(255,255,255,.8)}
+.room .window{position:absolute;left:1%;top:9%;width:24%;height:52%;background:radial-gradient(ellipse at 50% 45%,#fff 0%,#fff 30%,#fbeef3 65%,rgba(250,230,238,.4) 100%);filter:blur(3px)}
+.room .curtain{position:absolute;left:-1%;top:7%;width:30%;height:66%;filter:blur(1.5px);background:repeating-linear-gradient(90deg,rgba(255,255,255,.7) 0 10px,rgba(255,226,236,.25) 10px 24px,rgba(255,255,255,.45) 24px 30px)}
+.room .valance{position:absolute;left:-1%;top:6%;width:30%;height:5%;background:radial-gradient(circle at 10px 0,rgba(255,255,255,.9) 9px,transparent 10px) 0 0/22px 100%;filter:blur(1px)}
+.room .shelf{position:absolute;left:25%;top:22%;width:11%;height:44%;background:#fbf4f6;border:3px solid #f6e9ee;box-shadow:inset 0 0 0 2px #efe0e6}
+.room .shelf i{position:absolute;left:6%;right:6%;height:3px;background:#efdde4}
+.room .shelf b{position:absolute;bottom:4px;width:7%;border-radius:1px}
+.room .bed{position:absolute;left:4%;bottom:5%;width:46%;height:24%;border-radius:18px 18px 0 0;
+  background:radial-gradient(circle at 14% 40%,#fff 0 3%,transparent 3.5%),radial-gradient(circle at 34% 70%,#bfe0b8 0 2%,transparent 2.5%),radial-gradient(circle at 52% 35%,#fff 0 3%,transparent 3.5%),radial-gradient(circle at 70% 65%,#f9c9d8 0 4%,transparent 4.5%),radial-gradient(circle at 86% 30%,#fff 0 2.5%,transparent 3%),linear-gradient(#fbe3ec,#f4c6d6);
+  box-shadow:0 -6px 0 #fff inset;filter:blur(.6px)}
+.room .floor{position:absolute;left:0;right:0;bottom:0;height:6%;background:#e6b7c8}
+
+/* 전신 + 프롬프트 카드 */
+.stage{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:10px;align-items:center}
+.figure{position:relative;height:640px;display:flex;align-items:flex-end;justify-content:center}
+.figure img{position:relative;z-index:2;max-height:620px;max-width:100%;object-fit:contain;filter:drop-shadow(0 10px 10px rgba(110,50,80,.28));transition:opacity .2s,transform .35s}
+.figure img.flip{transform:scaleX(-1)}
+.figure .shadow{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:130px;height:18px;border-radius:50%;background:rgba(150,80,110,.25);filter:blur(4px)}
+
+.side{display:flex;flex-direction:column;gap:10px;align-self:center}
+.card{background:rgba(255,255,255,.88);border-radius:20px;padding:14px 14px 12px;box-shadow:0 0 0 3px #fff,0 0 0 5px var(--p3),0 10px 22px rgba(140,60,95,.22);backdrop-filter:blur(4px)}
+.card .tag{display:inline-block;font-family:'Nunito';font-weight:900;font-size:10px;letter-spacing:2px;color:#fff;background:var(--p4);padding:3px 9px;border-radius:20px;margin-bottom:7px}
+.card .nm{display:block;width:100%;font-family:'Nunito','Pretendard';font-weight:800;font-size:18px;color:var(--navy);line-height:1.25;border:0;background:none;outline:none}
+.card input.nm{border-bottom:1px dashed var(--p3)}
+.card .memo{font-size:12px;color:#b08799;margin:3px 0 9px}
+.card .ptext{display:block;width:100%;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.65;color:#574550;background:var(--mint);border:1px solid #d8ebee;border-radius:10px;padding:9px 10px;max-height:280px;overflow:auto;word-break:break-word;white-space:pre-wrap;outline:none}
+.card textarea.ptext{height:120px;resize:vertical}
+.card .copy{margin-top:9px;width:100%;display:flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:30px;padding:9px;cursor:pointer;font-weight:800;font-size:13px;color:var(--navy);background:linear-gradient(#fff,#ebedfb);box-shadow:inset 0 0 0 2px var(--lav2),0 2px 0 #b9b5df}
+.card .copy svg{font-size:15px}
+
+.card.look{padding:11px 14px 10px}
+.card.look .tag{background:#7c74ad}
+.card.look .ptext{max-height:96px;font-size:11.5px}
+.card.look textarea.ptext{height:96px}
+.card.look .copy{margin-top:7px;padding:7px}
+.edit{background:rgba(255,255,255,.88);border-radius:14px;padding:6px 10px 10px;box-shadow:0 0 0 2px var(--p2)}
+.edit label{display:block;font-size:11px;font-weight:700;color:#9a7486;margin:7px 0 4px}
+.edit input{width:100%;border:1px solid #e3c6d2;border-radius:8px;padding:6px 8px;font-size:13px;font-family:inherit;color:#3d2f38;background:#fff}
+.edit .catpick{display:grid;grid-template-columns:repeat(6,1fr);gap:3px}
+.edit .catpick button{display:flex;flex-direction:column;align-items:center;gap:1px;border:1px solid #eadbe2;background:#fff;border-radius:7px;padding:3px 0;font-size:9px;color:#7a5a6a;cursor:pointer}
+.edit .catpick button svg{font-size:20px;color:var(--ic)}
+.edit .catpick button.on{background:#ece9fb;border-color:#8f86c4}
+.edit .gsel{display:flex;gap:6px}
+.edit .gsel button{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid #e3c6d2;background:#fff;border-radius:8px;padding:5px;font-size:13px;cursor:pointer;color:#7a5a6a}
+.edit .gsel button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.edit .row{display:flex;gap:6px;margin-top:9px}
+.edit .row button{flex:1;border:0;border-radius:8px;padding:7px 4px;font-size:12px;font-weight:700;cursor:pointer;background:#f3e3ea;color:#6b4658}
+.edit .row button.del{background:#fde0e0;color:#b2414d}
+
+/* ═════ 가운데 동그란 버튼 ═════ */
+.dial{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:34px}
+.orbwrap{position:relative}
+.orb{position:relative;width:96px;height:96px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;
+  background:linear-gradient(150deg,#fde9f0 0%,#eab4c8 60%,#d58ea9 100%);box-shadow:inset 0 3px 0 #fff,0 5px 0 #b97590,0 10px 16px rgba(110,40,70,.3)}
+.orb::before{content:"";position:absolute;inset:12px;border-radius:50%;background:radial-gradient(circle at 34% 26%,#fff 0 7%,#e3e7fb 18%,#9fa9e0 55%,#6f78c2 100%);box-shadow:inset 0 -5px 10px rgba(30,30,100,.35),0 0 0 3px #f9dbe6}
+.orb .gl{position:relative;z-index:1;font-size:40px;color:var(--navy)}
+.orb .gl svg{stroke-width:2.2}
+.orb:active{transform:translateY(3px);box-shadow:inset 0 3px 0 #fff,0 2px 0 #b97590}
+.orb.small{width:76px;height:76px}
+.orb.small .gl{font-size:30px}
+.gtoggle{position:absolute;left:-26px;top:-30px;display:flex;border-radius:30px 30px 6px 30px;overflow:hidden;background:linear-gradient(#fbe7ef,#ecbacc);box-shadow:inset 0 2px 0 #fff,0 3px 0 #c58aa2}
+.gtoggle button{width:40px;height:34px;border:0;background:none;cursor:pointer;font-size:19px;color:#8a8fbf;display:grid;place-items:center}
+.gtoggle button.on{background:radial-gradient(circle at 40% 35%,#fff,#d7dcf6 60%,#a5acdf);color:var(--navy)}
+.gtoggle button svg{stroke-width:2.3}
+.fan{position:absolute;left:62px;top:50%;transform:translateY(-50%);width:84px;height:150px;border-radius:0 90px 90px 0;background:linear-gradient(90deg,#4a4f86,#3a3e74);box-shadow:inset 0 0 0 3px #f2c8d7;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:2px;padding-right:12px;z-index:-1}
+.fan span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:15px;color:#c9d0ff;cursor:pointer}
+.fan span.on{background:#c9f07a;color:#2b3a10}
+.fan span:nth-child(1),.fan span:nth-child(5){margin-right:16px}
+.fan span:nth-child(2),.fan span:nth-child(4){margin-right:4px}
+
+/* ═════ 오른쪽 분홍 패널 ═════ */
+.panel{position:relative;z-index:2;align-self:center;background:linear-gradient(165deg,#f8d5e2 0%,#eab0c5 55%,#dc97b1 100%);border-radius:60px 60px 40px 40px;padding:84px 22px 22px;
+  box-shadow:inset 0 4px 0 rgba(255,255,255,.75),inset 0 -8px 0 rgba(160,70,105,.22),0 14px 30px rgba(130,50,85,.3)}
+.pills{position:absolute;top:-24px;left:50%;transform:translateX(-50%);width:76%;display:flex;padding:10px;border-radius:44px;background:linear-gradient(#fbe4ed,#e9b5c8);box-shadow:inset 0 3px 0 #fff,0 4px 0 #c3819c,0 6px 12px rgba(120,50,80,.2)}
+.pill{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:30px;padding:11px 6px;font-family:'Nunito';font-weight:900;font-size:18px;color:var(--navy);
+  background:linear-gradient(#f4ecf9,#ddd0ea);box-shadow:inset 0 0 0 2px #8476b3,inset 0 3px 7px rgba(70,50,130,.25)}
+.pill svg{font-size:22px;color:#5a5fb0}
+.pill .cnt{font-family:'Pretendard';font-size:12px;font-weight:700;color:#7c74ad;background:#fff;border-radius:20px;padding:2px 8px}
+
+.screen{background:#fff;border-radius:24px 24px 18px 18px;border:3px solid #c5869f;overflow:hidden;box-shadow:inset 0 0 0 4px #fbe9f0}
+.tabs1{display:flex;justify-content:space-around;align-items:flex-end;min-height:54px;padding:0 14px;background:linear-gradient(#f2e6ee,#e5d3de);border-bottom:2px solid #d5b4c3}
+.tabs1 span{font-size:22px;color:#7066ad;padding:5px 9px 6px;border-radius:9px 9px 0 0;cursor:pointer}
+.tabs1 span.on{background:#fff;box-shadow:0 -2px 0 #d5b4c3}
+.cats{display:flex;justify-content:space-around;align-items:center;min-height:46px;padding:7px 10px;background:var(--mint);border-bottom:1px solid #dcebee}
+.partlabel{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--ic)}
+.partlabel svg{font-size:22px}
+.tabs1 span small{display:block;font-size:10px;font-weight:700;text-align:center;margin-top:1px}
+.copy.combo{background:linear-gradient(#fff,#fde8f0)!important;box-shadow:inset 0 0 0 2px var(--p2),0 2px 0 #e0a9bf!important}
+.combo-note{font-size:10.5px;color:#b08799;text-align:center;margin-top:5px;line-height:1.4}
+.cat{border:0;background:none;padding:5px 7px;border-radius:9px;font-size:24px;color:var(--ic);opacity:.7;cursor:pointer}
+.cat:hover{opacity:1}
+.cat.on{opacity:1;background:#fff;box-shadow:0 0 0 2px #cfc9ee}
+.inner{margin:10px;border:2px solid #e6d8df;border-radius:6px;background:#fff;padding:8px 6px 6px}
+.catname{text-align:center;font-size:12.5px;font-weight:700;color:#7a74b0;margin-bottom:8px}
+.gridwrap{display:flex;align-items:center;gap:4px}
+.arrow{flex-shrink:0;width:22px;height:70px;border:0;background:none;cursor:pointer;font-size:34px;line-height:1;color:#d8b6c6}
+.arrow:disabled{opacity:.2;cursor:default}
+.grid{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.thumb{position:relative;aspect-ratio:3/4;border-radius:8px;cursor:pointer;overflow:hidden;background:linear-gradient(#fff 40%,#e3f2f4);border:2px solid #c49db0;transition:transform .12s}
+.thumb:hover{transform:translateY(-2px)}
+.thumb.on{border-color:#5149a3;box-shadow:0 0 0 2px #b8b2ea}
+.thumb img{width:100%;height:100%;object-fit:contain;object-position:bottom;padding:8px 4px 3px}
+.thumb::after{content:"❀";position:absolute;top:2px;right:4px;font-size:11px;color:#d4bcc8}
+.thumb.empty{cursor:default;border:2px dashed #ecdfe5;background:#fbfdfd}
+.thumb.empty::after{display:none}
+.thumb.add{display:grid;place-items:center;border-style:dashed;color:#c48aa2;font-size:13px;font-weight:700;text-align:center;line-height:1.5}
+.thumb.add::after{display:none}
+.bar{margin:12px 26px 2px;height:13px;border-radius:10px;background:#e3d9f0;box-shadow:inset 0 1px 3px rgba(0,0,0,.12);position:relative}
+.knob{position:absolute;top:50%;width:17px;height:17px;border-radius:50%;background:#fff;border:2px solid #b0a2cf;transform:translate(-50%,-50%);transition:left .2s}
+.corner{display:flex;justify-content:flex-end;padding:2px 6px 0}
+.corner button{border:0;background:none;font-size:20px;color:#8a7f9e;cursor:pointer}
+.okno{display:flex;justify-content:center;gap:34px;margin-top:16px}
+.okno button{width:80px;height:40px;border-radius:22px;border:0;cursor:pointer;font-size:22px;color:var(--navy);display:grid;place-items:center;background:linear-gradient(#fff,#eceefb);box-shadow:inset 0 0 0 2px #a8a3cf,0 4px 0 #b9849c}
+.okno button svg{stroke-width:2.6}
+
+/* ═════ 아래 버튼줄 ═════ */
+.bottom{position:relative;z-index:3;grid-column:1/3;display:flex;align-items:flex-end;justify-content:space-between;padding:0 6px}
+.rbtn{width:52px;height:52px;border-radius:50%;border:0;cursor:pointer;font-size:24px;color:var(--navy);display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#fff,#e2c9f0 45%,#a38fcc);box-shadow:0 0 0 4px #f4cfdc,0 4px 0 4px #c48aa2}
+.rbtn svg{stroke-width:2.2}
+.ped{display:flex;align-items:center;gap:4px}
+.ped button{border:0;background:none;font-size:32px;color:#e27fa6;cursor:pointer;display:grid}
+.ped button svg{stroke-width:2.6}
+.ped .man{width:50px;height:62px;display:grid;place-items:end center;font-size:44px;color:#f19ec0;background:radial-gradient(ellipse at 50% 92%,#fff 0 30%,transparent 32%)}
+.ped .man svg{fill:#f7b6cf;stroke:#e07ea4}
+.undo{display:flex;gap:8px}
+.undo .rbtn{width:42px;height:42px;font-size:19px}
+.sticker{position:absolute;right:16px;bottom:10px;z-index:4;font-family:'Nunito';font-weight:900;font-size:24px;color:#bff0b6;-webkit-text-stroke:1.6px #2f7a4c;transform:rotate(-14deg);background:#e8fbe3;border:2px dashed #2f7a4c;border-radius:16px;padding:2px 12px;outline:none}
+
+.toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);opacity:0;transition:.25s;z-index:60;background:#fff;color:var(--navy);font-weight:700;font-size:14px;padding:10px 18px;border-radius:30px;box-shadow:0 0 0 2px var(--p2),0 6px 16px rgba(120,60,90,.25)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.modal{position:fixed;inset:0;z-index:70;background:rgba(80,40,60,.35);display:grid;place-items:center}
+.modal .box{width:280px;background:#fff;border-radius:20px;padding:20px;text-align:center;box-shadow:0 0 0 4px var(--p2)}
+.modal h4{font-family:'Nunito';color:var(--navy);margin-bottom:10px}
+.modal input{width:100%;border:1px solid #e3c6d2;border-radius:10px;padding:9px;font-size:15px;text-align:center}
+.modal .r{display:flex;gap:8px;margin-top:12px}
+.modal button{flex:1;border:0;border-radius:20px;padding:9px;font-weight:700;cursor:pointer;background:#f3e3ea;color:#6b4658}
+.modal button.go{background:var(--navy);color:#fff}
+
+</style>
+</head>
+<body>
+
+<div id="fit"><div class="win">
+  <div class="titlebar">
+    <span class="ico">✿</span>
+    <span class="ttl" id="siteTitle">Dress Room</span>
+    <div class="ctl"><button id="lockBtn" title="관리자 모드"><i data-ic="lock"></i></button><span>—</span><span>☐</span><span>✕</span></div>
+  </div>
+
+  <div class="adminbar" id="adminbar" hidden>
+    <b>ADMIN</b>
+    <button class="hot" id="addBtn">＋ 의상 추가</button>
+    <span class="note">제목·스티커 글자는 눌러서 수정</span>
+    <span class="sp"></span>
+    <button class="hot" id="exportBtn">💾 사이트 파일 저장</button>
+    <button id="exitAdmin">나가기</button>
+    <input type="file" id="addFile" accept="image/*" multiple hidden>
+    <input type="file" id="swapFile" accept="image/*" hidden>
+  </div>
+
+  <div class="scene">
+    <div class="room">
+      <div class="ceil"></div><div class="lamp"></div>
+      <div class="window"></div><div class="curtain"></div><div class="valance"></div>
+      <div class="shelf">
+        <i style="top:24%"></i><i style="top:49%"></i><i style="top:74%"></i>
+        <b style="left:10%;height:16%;background:#c9d8f2"></b><b style="left:20%;height:14%;background:#f2c7d6"></b>
+        <b style="left:30%;height:17%;background:#f6e2a8"></b><b style="left:62%;height:13%;background:#c7e8cf"></b>
+      </div>
+      <div class="bed"></div><div class="floor"></div>
+    </div>
+
+    <!-- 전신 + 프롬프트 카드 -->
+    <div class="stage">
+      <div class="figure"><div class="shadow"></div><img id="full" alt=""></div>
+      <div class="side">
+        <div class="card">
+          <div class="tag">PROMPT</div>
+          <div id="viewBox">
+            <div class="nm" id="pname"></div>
+            <div class="memo" id="pmemo"></div>
+            <div class="ptext" id="ptext"></div>
+          </div>
+          <div id="editCard" hidden>
+            <input class="nm" id="eName" placeholder="의상 이름">
+            <div class="memo">프롬프트를 아래에 적거나 붙여 넣으세요</div>
+            <textarea class="ptext" id="ePrompt"></textarea>
+          </div>
+          <button class="copy" id="copyBtn"><i data-ic="copy"></i>프롬프트 복사</button>
+          <button class="copy combo" id="comboBtn"><i data-ic="sparkle"></i>조합 복사</button>
+          <div class="combo-note" id="comboNote"></div>
+        </div>
+        <div class="card look">
+          <div class="tag">LOOK · 외형</div>
+          <div class="ptext" id="lookText"></div>
+          <textarea class="ptext" id="lookEdit" placeholder="이 성별 캐릭터의 외형 프롬프트를 적어 주세요" hidden></textarea>
+          <button class="copy" id="lookCopy"><i data-ic="copy"></i>외형 복사</button>
+        </div>
+        <div class="edit" id="editBox" hidden>
+          <div id="catWrap"><label>분류</label><div class="catpick" id="catPick"></div></div>
+          <label>성별</label><div class="gsel"><button data-g="f"><i data-ic="female"></i>여자</button><button data-g="m"><i data-ic="male"></i>남자</button></div>
+          <label>메모</label><input id="eMemo" placeholder="짧은 메모 (안 써도 돼요)">
+          <div class="row"><button id="eSwap">📷 사진 바꾸기</button></div>
+          <div class="row"><button id="eLeft">◀ 앞으로</button><button id="eRight">뒤로 ▶</button><button class="del" id="eDel">삭제</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 가운데 동그란 버튼 -->
+    <div class="dial">
+      <div class="orbwrap">
+        <div class="gtoggle"><button data-g="f"><i data-ic="female"></i></button><button data-g="m"><i data-ic="male"></i></button></div>
+        <button class="orb" id="gOrb" title="성별 바꾸기"><span class="gl" id="gSym"></span></button>
+      </div>
+      <div class="orbwrap">
+        <button class="orb" id="flipOrb" title="돌려 보기"><span class="gl"><i data-ic="person"></i></span></button>
+        <div class="fan" id="fan"></div>
+      </div>
+      <div class="orbwrap"><button class="orb small" id="dice" title="랜덤"><span class="gl"><i data-ic="dice"></i></span></button></div>
+    </div>
+
+    <!-- 오른쪽 패널 -->
+    <div class="panel">
+      <div class="pills"><div class="pill"><i data-ic="hanger"></i>Wardrobe<span class="cnt" id="count"></span></div></div>
+      <div class="screen">
+        <div class="tabs1" id="tabs1"></div>
+        <div class="cats" id="cats"></div>
+        <div class="inner">
+          <div class="catname" id="catname"></div>
+          <div class="gridwrap">
+            <button class="arrow" id="prev">‹</button>
+            <div class="grid" id="grid"></div>
+            <button class="arrow" id="next">›</button>
+          </div>
+          <div class="bar"><div class="knob" id="knob"></div></div>
+          <div class="corner"><button id="copy2" title="프롬프트 복사"><i data-ic="copy"></i></button></div>
+        </div>
+      </div>
+      <div class="okno"><button id="ok" title="프롬프트 복사"><i data-ic="check"></i></button><button id="no" title="처음으로"><i data-ic="cross"></i></button></div>
+    </div>
+
+    <!-- 아래 버튼 -->
+    <div class="bottom">
+      <button class="rbtn" id="home" title="처음으로"><i data-ic="exit"></i></button>
+      <div class="ped"><button id="rotL"><i data-ic="rotL"></i></button><div class="man"><i data-ic="person"></i></div><button id="rotR"><i data-ic="rotR"></i></button></div>
+      <div class="undo"><button class="rbtn" id="prevO" title="이전 의상"><i data-ic="undo"></i></button><button class="rbtn" id="nextO" title="다음 의상"><i data-ic="redo"></i></button></div>
+    </div>
+    <div class="sticker" id="sticker">dress up ♡</div>
+  </div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+<div class="modal" id="pwModal" hidden>
+  <div class="box">
+    <h4>ADMIN</h4>
+    <input type="password" id="pwInput" placeholder="비밀번호">
+    <div class="r"><button id="pwCancel">취소</button><button class="go" id="pwOk">들어가기</button></div>
+  </div>
+</div>
+
+<script>
+/* 페이지가 바뀌기 전 모습을 저장해 둬요 (사이트 파일 저장용) */
+const TEMPLATE = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+/* ═══════════════════════════════
+   관리자 비밀번호 — 원하는 걸로 바꾸세요
+   ═══════════════════════════════ */
+const ADMIN_PASSWORD = "0000";
+
+/* 저장된 사이트 내용 (관리자 모드에서 저장하면 자동으로 채워져요. 직접 고치지 마세요) */
+const SAVED = /*DATA*/null/*END*/;
+
+/* ───────── 여기부터는 안 고쳐도 돼요 ───────── */
+const $=id=>document.getElementById(id);
+const PER=8;
+
+/* 직접 그린 아이콘들 */
+const IC={
+  hanger:'<path d="M10 6.5a2 2 0 1 1 2.6 1.9c-.4.1-.6.4-.6.8V10"/><path d="M12 10 3.6 16.1c-.8.6-.4 1.9.6 1.9h15.6c1 0 1.4-1.3.6-1.9z"/>',
+  dress:'<path d="M9.5 3 10 6h4l.5-3"/><path d="M10 6 9 11h6l-1-5"/><path d="M9 11 5 21h14l-4-10"/><path d="M8 16.5c1.5.8 6.5.8 8 0"/>',
+  tee:'<path d="M8.5 4 3 7l2 4 2.2-1V20h9.6V10l2.2 1 2-4-5.5-3c-.5 1.4-1.8 2.3-3.5 2.3S9 5.4 8.5 4z"/>',
+  pants:'<path d="M7 3h10l1.2 18h-4.2L12 10l-2 11H5.8z"/><path d="M7 6.5h10"/>',
+  skirt:'<path d="M8 5h8"/><path d="M8 5 4 19h16L16 5"/><path d="M10.3 8 8.8 19M13.7 8l1.5 11M12 8v11"/>',
+  jacket:'<path d="M9 3 4 6.5V21h5.5V9.5"/><path d="M15 3l5 3.5V21h-5.5V9.5"/><path d="M9 3l3 5 3-5"/><path d="M12 8v13"/>',
+  uniform:'<path d="M8 4 4 7v14h16V7l-4-3"/><path d="M8 4l4 6 4-6"/><path d="M12 10l-1.6 3.2L12 17l1.6-3.8z"/>',
+  bowtie:'<path d="M12 12 4 7.5v9zM12 12l8-4.5v9z"/><circle cx="12" cy="12" r="1.7"/>',
+  moon:'<path d="M19.5 14.5A8 8 0 1 1 9.5 4.5a6.3 6.3 0 0 0 10 10z"/>',
+  shoe:'<path d="M3.5 18.5V10l4-.5 2.5 3 6 1.2c3 .6 4.5 1.8 4.5 3.3v1.5z"/><path d="M7 13.5h2.5"/>',
+  bag:'<path d="M5 9h14l-1.2 11H6.2z"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/>',
+  female:'<circle cx="12" cy="9" r="5"/><path d="M12 14v7M9 18h6"/>',
+  male:'<circle cx="10" cy="14" r="5"/><path d="M13.6 10.4 19 5M14 5h5v5"/>',
+  person:'<circle cx="12" cy="5" r="2.6"/><path d="M8.6 9.5h6.8l1.1 6.5h-2.2l-.6 6h-3.4l-.6-6H7.5z"/>',
+  dice:'<rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.1" fill="currentColor"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.1" fill="currentColor"/>',
+  sparkle:'<path d="M12 3c.6 4.6 2.4 6.4 7 7-4.6.6-6.4 2.4-7 7-.6-4.6-2.4-6.4-7-7 4.6-.6 6.4-2.4 7-7z"/>',
+  star:'<path d="M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.8L12 16.5l-5.1 2.8L8 13.5l-4.3-4 5.8-.7z"/>',
+  heart:'<path d="M12 20s-7.5-4.6-7.5-10.2A4 4 0 0 1 12 7.4a4 4 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z"/>',
+  ribbon:'<path d="M12 10 5 6v8zM12 10l7-4v8z"/><path d="M11 11.5 8 20M13 11.5l3 8.5"/>',
+  face:'<circle cx="12" cy="12" r="8"/><circle cx="9.5" cy="10.5" r=".9" fill="currentColor"/><circle cx="14.5" cy="10.5" r=".9" fill="currentColor"/><path d="M9.5 14.5c1.4 1.2 3.6 1.2 5 0"/>',
+  hair:'<path d="M5 20c0-10 2.2-15.5 7-15.5S19 10 19 20"/><path d="M7.5 11.5c2.2-.6 4-2.6 4.5-4.6.9 2.1 3 3.7 4.5 4.1"/>',
+  mirror:'<ellipse cx="12" cy="9" rx="5" ry="6"/><path d="M12 15v6M9 21h6M10 6.5c.6-.8 1.4-1.2 2.3-1.2"/>',
+  lock:'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  copy:'<rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2"/><path d="M15.5 8.5V5.5a1.5 1.5 0 0 0-1.5-1.5H5.5A1.5 1.5 0 0 0 4 5.5V14a1.5 1.5 0 0 0 1.5 1.5h3"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  cross:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  rotL:'<path d="M4 13a8 8 0 1 0 2.6-6.4"/><path d="M4 4v5h5"/>',
+  rotR:'<path d="M20 13a8 8 0 1 1-2.6-6.4"/><path d="M20 4v5h-5"/>',
+  exit:'<path d="M11 12H3.5M6.5 9 3.5 12l3 3"/><path d="M9 6V4h11v16H9v-2"/>',
+  undo:'<path d="M9 13 4.5 8.5 9 4"/><path d="M4.5 8.5H14a5.5 5.5 0 0 1 0 11h-3"/>',
+  redo:'<path d="M15 13l4.5-4.5L15 4"/><path d="M19.5 8.5H10a5.5 5.5 0 0 0 0 11h3"/>'
+};
+const svg=n=>`<svg class="i" viewBox="0 0 24 24">${IC[n]||IC.hanger}</svg>`;
+function paintIcons(root=document){root.querySelectorAll('i[data-ic]').forEach(e=>{e.outerHTML=svg(e.dataset.ic);});}
+
+/* 분류 목록 (이름 : 아이콘) */
+const CATS=[["원피스","dress"],["상의","tee"],["바지","pants"],["치마","skirt"],["아우터","jacket"],["정장","bowtie"],["잠옷","moon"],["신발","shoe"],["소품","bag"],["기타","hanger"]];
+/* 예전 분류 이름은 새 이름으로 바꿔요 */
+const CAT_RENAME={"하의":"바지","교복":"기타"};
+const catIcon=c=>(CATS.find(x=>x[0]===c)||[0,"hanger"])[1];
+
+function sample(){
+  const f=[["Gingham Dress","원피스","1girl, long black hair, blue gingham dress, puffed sleeves, lace collar, white knee socks, red mary janes, full body, white background"],
+    ["Black Tiered","치마","black tank top, white tiered skirt, black leg warmers, crossbody bag, full body"],
+    ["Pink Frill","원피스","black camisole, pink frilled skirt, pink leg warmers, full body"],
+    ["Wide Denim","바지","white blouse, wide leg denim jeans, black loafers, full body"],
+    ["Black Slacks","바지","black knit top, black slacks, silver belt, full body"],
+    ["Red Mini","치마","black t-shirt, red mini skirt, black boots, full body"]];
+  const m=[["Black Henley","상의","1boy, blonde hair, black henley shirt, black skinny jeans, black boots, holding phone, mirror selfie, full body"],
+    ["Ripped Denim","바지","black cardigan, white shirt, ripped blue jeans, sneakers, full body"],
+    ["Graphic Tee","상의","grey graphic t-shirt, black jeans, chain, full body"],
+    ["Long Coat","아우터","black long coat, white shirt, black slacks, full body"],
+    ["Blazer","정장","black blazer, white shirt, black slacks, loafers, full body"]];
+  let id=1;const out=[];
+  f.forEach(x=>out.push({id:id++,gender:"f",name:x[0],cat:x[1],memo:"",prompt:x[2],img:""}));
+  m.forEach(x=>out.push({id:id++,gender:"m",name:x[0],cat:x[1],memo:"",prompt:x[2],img:""}));
+  const extra=[["f","base","기본 캐릭터","1girl, solo, pale skin, slender"],["f","face","미소","smile, closed mouth, looking at viewer"],["f","face","무표정","expressionless, half-closed eyes"],
+    ["f","hair","긴 흑발","long black hair, straight hair, blunt bangs"],["f","pose","서 있기","standing, arms at sides, full body"],
+    ["m","base","기본 캐릭터","1boy, solo, slim"],["m","face","무표정","expressionless, looking down"],["m","hair","금발 레이어드","blonde hair, layered hair, bangs over eyes"],["m","pose","거울 셀카","mirror selfie, holding phone, standing"]];
+  extra.forEach(x=>out.push({id:id++,gender:x[0],part:x[1],name:x[2],cat:"",memo:"",prompt:x[3],img:""}));
+  return {title:"Dress Room",sticker:"dress up ♡",savedAt:0,look:{f:"black hair, long hair, blunt bangs, dark eyes, pale skin",m:"blonde hair, layered hair, brown eyes, slim"},outfits:out};
+}
+
+/* 사진이 없을 때 쓰는 임시 인형 */
+const COL=["#a9c7e8","#2b2b2b","#f2a7c0","#46507e","#3f7a5b","#c23a4a","#c79a52","#8b8fa8"];
+function doll(o){
+  const c=COL[o.id%COL.length], skin="#f6dccf";
+  const s = o.gender==="m"
+   ? `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 300'><ellipse cx='60' cy='36' rx='17' ry='20' fill='${skin}'/><path d='M42 34c-2-20 38-24 38 2l-4-10c-8 6-22 6-30 0z' fill='#d8b35f'/><path d='M44 58h32l14 8-4 50-8-1-2 44H44l-2-44-8 1-4-50z' fill='${c}'/><path d='M44 158h32l-2 104H63l-3-80-3 80H46z' fill='#3b3d4a'/><ellipse cx='52' cy='266' rx='9' ry='5' fill='#222'/><ellipse cx='68' cy='266' rx='9' ry='5' fill='#222'/></svg>`
+   : `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 300'><ellipse cx='60' cy='38' rx='18' ry='21' fill='${skin}'/><path d='M40 36c0-22 40-22 40 0v42h-7V40c-6-8-20-8-26 0v38h-7z' fill='#1f2233'/><path d='M48 62h24l4 14 16 6-4 30-9-2 3 48H38l3-48-9 2-4-30 16-6z' fill='${c}'/><rect x='45' y='160' width='10' height='100' rx='5' fill='${skin}'/><rect x='65' y='160' width='10' height='100' rx='5' fill='${skin}'/><rect x='44' y='215' width='12' height='45' fill='#fff'/><rect x='64' y='215' width='12' height='45' fill='#fff'/><ellipse cx='50' cy='266' rx='9' ry='5' fill='#a63a3a'/><ellipse cx='70' cy='266' rx='9' ry='5' fill='#a63a3a'/></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);
+}
+const src=o=>o.img||doll(o);
+
+let DATA = SAVED ? JSON.parse(JSON.stringify(SAVED)) : sample();
+const S={g:"f",part:"outfit",cat:"전체",page:0,sel:{},admin:false};
+/* 위쪽 탭 = 파트 (기본 / 표정 / 헤어 / 포즈 / 의상) */
+const PARTS=[["base","기본","sparkle"],["face","표정","face"],["hair","헤어","hair"],["pose","포즈","mirror"],["outfit","의상","hanger"]];
+const partOf=o=>o.part||"outfit";
+const partName=p=>PARTS.find(x=>x[0]===p)[1];
+const K=()=>S.g+"|"+S.part;
+
+/* ── 임시 저장 (관리자 본인 브라우저에만) ── */
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('dressroom',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function draftSave(){try{const d=await idb();d.transaction('kv','readwrite').objectStore('kv').put(JSON.stringify(DATA),'draft');}catch(e){}}
+async function draftLoad(){try{const d=await idb();return await new Promise(r=>{const q=d.transaction('kv').objectStore('kv').get('draft');q.onsuccess=()=>r(q.result?JSON.parse(q.result):null);q.onerror=()=>r(null);});}catch(e){return null;}}
+let saveTimer;
+function touch(){DATA.savedAt=Date.now();clearTimeout(saveTimer);saveTimer=setTimeout(draftSave,400);}
+
+/* ── 그리기 ── */
+const inG=()=>DATA.outfits.filter(o=>o.gender===S.g&&partOf(o)===S.part);
+const list=()=>inG().filter(o=>S.cat==="전체"||o.cat===S.cat);
+const cur=()=>DATA.outfits.find(o=>o.id===S.sel[K()]);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function render(){
+  DATA.outfits.forEach(o=>{if(CAT_RENAME[o.cat]) o.cat=CAT_RENAME[o.cat];});
+  if(!DATA.look) DATA.look={f:"",m:""};
+  $('siteTitle').textContent=DATA.title; document.title=DATA.title;
+  $('sticker').textContent=DATA.sticker;
+  $('gSym').innerHTML=svg(S.g==="f"?"female":"male");
+  document.querySelectorAll('.gtoggle button').forEach(b=>b.classList.toggle('on',b.dataset.g===S.g));
+
+  /* 위쪽 파트 탭 */
+  $('tabs1').innerHTML="";
+  PARTS.forEach(([p,n,ic])=>{const s=document.createElement('span');s.className=p===S.part?'on':'';s.title=n;
+    s.innerHTML=svg(ic)+`<small>${n}</small>`;s.onclick=()=>{S.part=p;S.cat="전체";S.page=0;render();};$('tabs1').appendChild(s);});
+  /* 동그란 버튼 옆 부채꼴 = 파트 바로가기 */
+  $('fan').innerHTML="";
+  PARTS.forEach(([p,n,ic])=>{const s=document.createElement('span');s.className=p===S.part?'on':'';s.title=n;s.innerHTML=svg(ic);
+    s.onclick=()=>{S.part=p;S.cat="전체";S.page=0;render();};$('fan').appendChild(s);});
+  /* 분류 아이콘 줄: 이 성별에 있는 분류만 */
+  const used=[...new Set(inG().map(o=>o.cat||"기타"))];
+  const order=CATS.map(c=>c[0]).filter(c=>used.includes(c)).concat(used.filter(c=>!CATS.some(x=>x[0]===c)));
+  if(S.cat!=="전체"&&!order.includes(S.cat)) S.cat="전체";
+  $('cats').innerHTML="";
+  [["전체","hanger"],...order.map(c=>[c,catIcon(c)])].forEach(([c,ic])=>{
+    const b=document.createElement('button');b.className='cat'+(c===S.cat?' on':'');b.title=c;b.innerHTML=svg(ic);
+    b.onclick=()=>{S.cat=c;S.page=0;render();};$('cats').appendChild(b);
+  });
+  if(S.part!=="outfit"){S.cat="전체";$('cats').innerHTML=`<span class="partlabel">${svg(PARTS.find(x=>x[0]===S.part)[2])}${partName(S.part)} 모아보기</span>`;}
+
+  const L=list();
+  $('catname').textContent=S.part==='outfit'?`${S.cat} · ${L.length}벌`:`${partName(S.part)} · ${L.length}개`;
+  $('count').textContent=`${DATA.outfits.filter(o=>o.gender===S.g&&partOf(o)==='outfit').length} looks`;
+  if(!cur()||cur().gender!==S.g||partOf(cur())!==S.part) S.sel[K()]=L[0]?L[0].id:null;
+  const items=[...L]; if(S.admin) items.push("add");
+  const pages=Math.max(1,Math.ceil(items.length/PER));
+  if(S.page>pages-1) S.page=pages-1;
+  $('grid').innerHTML="";
+  for(let k=0;k<PER;k++){
+    const o=items[S.page*PER+k], d=document.createElement('div');
+    if(o==="add"){d.className='thumb add';d.innerHTML='＋<br>의상 추가';d.onclick=()=>$('addFile').click();}
+    else if(!o){d.className='thumb empty';}
+    else{d.className='thumb'+(o.id===S.sel[K()]?' on':'');d.innerHTML=`<img src="${src(o)}" alt="">`;d.onclick=()=>{S.sel[K()]=o.id;render();};}
+    $('grid').appendChild(d);
+  }
+  $('prev').disabled=S.page===0; $('next').disabled=S.page>=pages-1;
+  $('knob').style.left=pages===1?'9px':`calc(9px + (100% - 18px) * ${S.page/(pages-1)})`;
+
+  const o=cur(), img=$('full');
+  if(o){ if(img.dataset.id!=String(o.id)||img.dataset.src!==o.img){img.style.opacity=0;setTimeout(()=>{img.src=src(o);img.style.opacity=1;},120);img.dataset.id=o.id;img.dataset.src=o.img;} }
+  else { img.removeAttribute('src'); img.dataset.id=''; }
+  $('pname').textContent=o?o.name:"의상이 없어요";
+  $('pmemo').textContent=o?(o.memo||o.cat||""):(S.admin?"＋ 의상 추가를 눌러 주세요":"");
+  $('ptext').textContent=o?o.prompt:"";
+
+  $('comboNote').textContent='고른 것: '+([DATA.look[S.g]?'외형':null,...comboParts().map(o=>o.name)].filter(Boolean).join(' + ')||'없음');
+  $('lookText').textContent=DATA.look[S.g]||'외형 프롬프트가 아직 없어요';
+  $('lookText').hidden=S.admin; $('lookEdit').hidden=!S.admin;
+  if(S.admin&&document.activeElement!==$('lookEdit')) $('lookEdit').value=DATA.look[S.g]||'';
+  const ed=S.admin&&!!o;
+  $('viewBox').hidden=ed; $('editCard').hidden=!ed; $('editBox').hidden=!ed;
+  if(ed){
+    if(document.activeElement!==$('eName')) $('eName').value=o.name;
+    if(document.activeElement!==$('eMemo')) $('eMemo').value=o.memo;
+    if(document.activeElement!==$('ePrompt')) $('ePrompt').value=o.prompt;
+    document.querySelectorAll('.gsel button').forEach(b=>b.classList.toggle('on',b.dataset.g===o.gender));
+    $('catWrap').hidden=S.part!=='outfit';
+    $('catPick').innerHTML="";
+    CATS.forEach(([c,ic])=>{const b=document.createElement('button');b.className=(o.cat===c?'on':'');b.innerHTML=svg(ic)+c;
+      b.onclick=()=>{o.cat=c;touch();render();};$('catPick').appendChild(b);});
+  }
+}
+
+function toast(t){const s=$('toast');s.textContent=t;s.classList.add('show');setTimeout(()=>s.classList.remove('show'),1400);}
+function copy(){const o=cur();if(!o)return;const t=o.prompt;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).catch(()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();})
+  .finally(()=>toast("프롬프트를 복사했어요!"));}
+/* 조합 복사: 파트마다 고른 것을 기본→헤어→표정→의상→포즈 순서로 이어 붙여요 */
+function comboParts(){return ["base","hair","face","outfit","pose"].map(p=>DATA.outfits.find(o=>o.id===S.sel[S.g+"|"+p]&&o.gender===S.g)).filter(Boolean);}
+function copyText(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).catch(()=>{const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();document.execCommand('copy');a.remove();}).finally(()=>toast(msg));}
+function step(d){const L=list();if(!L.length)return;let p=L.indexOf(cur());p=(p+d+L.length)%L.length;S.sel[K()]=L[p].id;S.page=Math.floor(p/PER);render();}
+function setG(g){S.g=g;S.cat="전체";S.page=0;render();}
+
+/* ── 보는 사람용 버튼 ── */
+paintIcons();
+$('prev').onclick=()=>{S.page--;render();};
+$('next').onclick=()=>{S.page++;render();};
+$('copyBtn').onclick=copy;
+$('lookCopy').onclick=()=>{const t=DATA.look[S.g];if(!t)return toast('외형 프롬프트가 아직 없어요');copyText(t,'외형 프롬프트를 복사했어요!');};
+$('lookEdit').oninput=e=>{DATA.look[S.g]=e.target.value;touch();};
+$('comboBtn').onclick=()=>{const L=[(DATA.look[S.g]||''),...comboParts().map(o=>o.prompt)];if(!L.some(t=>t.trim()))return toast('아직 고른 게 없어요');copyText(L.map(t=>t.trim().replace(/,\s*$/,'')).filter(Boolean).join(', '),'조합한 프롬프트를 복사했어요!');};$('copy2').onclick=copy;$('ok').onclick=copy;
+$('no').onclick=$('home').onclick=()=>{S.cat="전체";S.page=0;const L=list();S.sel[K()]=L[0]?L[0].id:null;render();};
+$('gOrb').onclick=()=>setG(S.g==="f"?"m":"f");
+document.querySelectorAll('.gtoggle button').forEach(b=>b.onclick=()=>setG(b.dataset.g));
+const flip=()=>$('full').classList.toggle('flip');
+$('flipOrb').onclick=flip;$('rotL').onclick=flip;$('rotR').onclick=flip;
+/* 랜덤: 옷만 한 벌 랜덤으로 골라요 (다른 칸은 그대로) */
+$('dice').onclick=()=>{
+  if(S.part!=="outfit"){S.part="outfit";S.cat="전체";}
+  const L=list(); if(!L.length) return toast("옷이 아직 없어요");
+  let pick=L[Math.floor(Math.random()*L.length)];
+  if(L.length>1) while(pick===cur()) pick=L[Math.floor(Math.random()*L.length)];
+  S.sel[K()]=pick.id; S.page=Math.floor(L.indexOf(pick)/PER); render();
+};
+$('prevO').onclick=()=>step(-1);$('nextO').onclick=()=>step(1);
+
+
+/* ── 관리자 모드 ── */
+$('lockBtn').onclick=()=>{ if(S.admin) return; $('pwModal').hidden=false; $('pwInput').value=""; setTimeout(()=>$('pwInput').focus(),50); };
+$('pwCancel').onclick=()=>$('pwModal').hidden=true;
+function tryPw(){ if($('pwInput').value===ADMIN_PASSWORD){$('pwModal').hidden=true;enterAdmin();} else {toast("비밀번호가 달라요");} }
+$('pwOk').onclick=tryPw; $('pwInput').onkeydown=e=>{if(e.key==="Enter")tryPw();};
+function enterAdmin(){S.admin=true;$('adminbar').hidden=false;$('siteTitle').contentEditable=true;$('sticker').contentEditable=true;toast("관리자 모드예요");render();}
+$('exitAdmin').onclick=()=>{S.admin=false;$('adminbar').hidden=true;$('siteTitle').contentEditable=false;$('sticker').contentEditable=false;render();};
+$('siteTitle').oninput=()=>{DATA.title=$('siteTitle').textContent.trim()||"Dress Room";document.title=DATA.title;touch();};
+$('sticker').oninput=()=>{DATA.sticker=$('sticker').textContent;touch();};
+
+/* 사진을 알맞은 크기로 줄여요 (배경 지운 PNG는 투명함 그대로) */
+function shrink(file,maxH=1100){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>{const im=new Image();im.onload=()=>{
+      const s=Math.min(1,maxH/im.height,800/im.width);const c=document.createElement('canvas');
+      c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      res(file.type==="image/jpeg"?c.toDataURL('image/jpeg',.86):c.toDataURL('image/webp',.88));
+    };im.onerror=rej;im.src=r.result;};
+    r.onerror=rej;r.readAsDataURL(file);
+  });
+}
+$('addBtn').onclick=()=>$('addFile').click();
+$('addFile').onchange=async e=>{
+  const files=[...e.target.files];if(!files.length)return;toast("사진 올리는 중…");
+  let last;
+  for(const f of files){
+    const img=await shrink(f);const id=Math.max(0,...DATA.outfits.map(o=>o.id))+1;
+    last={id,gender:S.g,part:S.part,name:f.name.replace(/\.[^.]+$/,""),cat:S.part!=="outfit"?"":(S.cat==="전체"?"기타":S.cat),memo:"",prompt:"",img};
+    DATA.outfits.push(last);
+  }
+  e.target.value="";S.sel[K()]=last.id;
+  S.page=Math.floor(list().indexOf(last)/PER);touch();render();
+  toast(files.length+"벌 추가했어요! 카드에 이름과 프롬프트를 적어 주세요");
+};
+$('eSwap').onclick=()=>$('swapFile').click();
+$('swapFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const o=cur();o.img=await shrink(f);e.target.value="";touch();render();toast("사진을 바꿨어요");};
+$('eName').oninput=e=>{cur().name=e.target.value;touch();};
+$('eMemo').oninput=e=>{cur().memo=e.target.value;touch();};
+$('ePrompt').oninput=e=>{cur().prompt=e.target.value;touch();};
+document.querySelectorAll('.gsel button').forEach(b=>b.onclick=()=>{const o=cur();o.gender=b.dataset.g;S.g=o.gender;S.sel[K()]=o.id;S.cat="전체";touch();render();});
+function move(d){
+  const o=cur(),L=inG(),i=L.indexOf(o),t=L[i+d];if(!t)return;
+  const a=DATA.outfits.indexOf(o),b=DATA.outfits.indexOf(t);[DATA.outfits[a],DATA.outfits[b]]=[DATA.outfits[b],DATA.outfits[a]];
+  S.page=Math.floor(list().indexOf(o)/PER);touch();render();
+}
+$('eLeft').onclick=()=>move(-1);$('eRight').onclick=()=>move(1);
+$('eDel').onclick=()=>{const o=cur();if(!confirm(`'${o.name}' 의상을 지울까요?`))return;DATA.outfits=DATA.outfits.filter(x=>x!==o);S.sel[K()]=null;touch();render();};
+
+/* 사이트 파일 저장: 사진까지 다 들어간 index.html을 내려받아요 */
+$('exportBtn').onclick=()=>{
+  if(!DATA.savedAt) DATA.savedAt=Date.now();
+  const A='/*DA'+'TA*/',B='/*E'+'ND*/';
+  const i=TEMPLATE.indexOf(A),j=TEMPLATE.indexOf(B,i);
+  const json=JSON.stringify(DATA).replace(/</g,'\\u003c');
+  const html=TEMPLATE.slice(0,i+A.length)+json+TEMPLATE.slice(j);
+  const url=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  const a=document.createElement('a');a.href=url;a.download='index.html';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),3000);
+  toast("index.html을 저장했어요!");
+};
+
+/* 가로 화면 그대로, 화면 크기에 맞춰 통째로 줄여요 */
+function fit(){
+  const box=$('fit'),w=box.firstElementChild;
+  const s=Math.min(1,(window.innerWidth-8)/1220,(window.innerHeight-20)/w.offsetHeight);
+  box.style.transform=`scale(${s})`;
+  box.style.width='1220px';
+  box.style.height=w.offsetHeight*s+'px';
+  box.style.marginLeft=Math.max(0,(window.innerWidth-1220*s)/2)+'px';
+}
+window.addEventListener('resize',fit);window.addEventListener('load',fit);
+const _render=render;render=function(){_render();fit();};
+/* 시작 */
+render();
+draftLoad().then(d=>{ if(d && d.savedAt>(DATA.savedAt||0)){ DATA=d; render(); } });
+</script>
+</body>
+</html>
