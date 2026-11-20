@@ -170,6 +170,23 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 .undo .rbtn{width:42px;height:42px;font-size:19px}
 .sticker{position:absolute;right:16px;bottom:10px;z-index:4;font-family:'Nunito';font-weight:900;font-size:24px;color:#bff0b6;-webkit-text-stroke:1.6px #2f7a4c;transform:rotate(-14deg);background:#e8fbe3;border:2px dashed #2f7a4c;border-radius:16px;padding:2px 12px;outline:none}
 
+/* 입장 잠금 화면 */
+.gate{position:fixed;inset:0;z-index:80;display:grid;place-items:center;
+  background:radial-gradient(ellipse at 50% 40%,#fbe6ee,#efc6d6 70%,#e4afc3)}
+.gate .gbox{width:300px;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 0 0 4px #fff,0 0 0 6px var(--p3),0 16px 36px rgba(130,50,85,.3);text-align:center}
+.gate .gbar{display:flex;align-items:center;gap:6px;height:30px;padding:0 10px;font-size:12.5px;font-weight:600;color:#3d2f38;background:linear-gradient(#fbe8ef,#f3d2df);border-bottom:1px solid #e2bccb}
+.gate .gbar span{flex:1;text-align:left}
+.gate .gin{padding:22px 22px 20px}
+.gate .lockic{font-size:40px;color:var(--navy);display:inline-grid;place-items:center;width:72px;height:72px;border-radius:50%;
+  background:radial-gradient(circle at 34% 26%,#fff 0 8%,#e3e7fb 20%,#9fa9e0 60%,#6f78c2 100%);box-shadow:0 0 0 5px #f6d3e0,0 4px 0 5px #c98aa3;margin-bottom:14px}
+.gate .lockic svg{stroke:#fff;stroke-width:2.2}
+.gate h4{font-family:'Nunito';font-weight:900;color:var(--navy);font-size:17px;margin-bottom:12px}
+.gate input{width:100%;border:2px solid #ecd2dd;border-radius:12px;padding:10px;font-size:16px;text-align:center;outline:none}
+.gate input:focus{border-color:#b9b0e6}
+.gate .hint{font-size:12.5px;color:#b07c93;margin-top:8px}
+.gate button{margin-top:14px;width:100%;border:0;border-radius:30px;padding:11px;font-weight:800;font-size:14px;color:#fff;cursor:pointer;background:linear-gradient(#7c84cc,#5a60ad);box-shadow:0 3px 0 #3f448a}
+.gate.shake .gbox{animation:shake .35s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
 .toast{position:fixed;left:50%;bottom:30px;transform:translate(-50%,20px);opacity:0;transition:.25s;z-index:60;background:#fff;color:var(--navy);font-weight:700;font-size:14px;padding:10px 18px;border-radius:30px;box-shadow:0 0 0 2px var(--p2),0 6px 16px rgba(120,60,90,.25)}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .modal{position:fixed;inset:0;z-index:70;background:rgba(80,40,60,.35);display:grid;place-items:center}
@@ -196,6 +213,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
     <button class="hot" id="addBtn">＋ 의상 추가</button>
     <span class="note">제목·스티커 글자는 눌러서 수정</span>
     <span class="sp"></span>
+    <button id="gateBtn">🔑 입장 비밀번호</button>
     <button class="hot" id="exportBtn">💾 사이트 파일 저장</button>
     <button id="exitAdmin">나가기</button>
     <input type="file" id="addFile" accept="image/*" multiple hidden>
@@ -295,6 +313,27 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 
 </div>
 <div class="toast" id="toast"></div>
+<div class="gate" id="gate" hidden>
+  <div class="gbox">
+    <div class="gbar"><span id="gateTitle">Dress Room</span>— ☐ ✕</div>
+    <div class="gin">
+      <div class="lockic"><i data-ic="lock"></i></div>
+      <h4>비밀번호를 입력해 주세요</h4>
+      <input type="password" id="gateInput" placeholder="비밀번호" autocomplete="off">
+      <div class="hint" id="gateHint"></div>
+      <button id="gateOk">들어가기</button>
+    </div>
+  </div>
+</div>
+<div class="modal" id="gateSet" hidden>
+  <div class="box">
+    <h4>입장 비밀번호</h4>
+    <input type="text" id="gsPw" placeholder="새 비밀번호">
+    <input type="text" id="gsHint" placeholder="힌트" style="margin-top:8px;font-size:13px">
+    <div class="r"><button id="gsOff">잠금 없애기</button><button class="go" id="gsSave">저장</button></div>
+    <div class="r" style="margin-top:6px"><button id="gsCancel">닫기</button></div>
+  </div>
+</div>
 <div class="modal" id="pwModal" hidden>
   <div class="box">
     <h4>ADMIN</h4>
@@ -593,9 +632,40 @@ function fit(){
 }
 window.addEventListener('resize',fit);window.addEventListener('load',fit);
 const _render=render;render=function(){_render();fit();};
+/* ── 입장 비밀번호 ── */
+async function hashPw(t){
+  t="dressroom:"+t;
+  try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+  catch(e){let x=5381;for(const c of t)x=((x*33)^c.charCodeAt(0))>>>0;return 'h'+x.toString(16);}
+}
+const GATE_KEY='dressroom-gate';
+function gateOpened(){try{return sessionStorage.getItem(GATE_KEY)===(DATA.gate&&DATA.gate.hash);}catch(e){return false;}}
+function showGate(){
+  if(!DATA.gate||!DATA.gate.hash||gateOpened()){$('gate').hidden=true;return;}
+  $('gateTitle').textContent=DATA.title;
+  $('gateHint').textContent=DATA.gate.hint||'';
+  $('gate').hidden=false;setTimeout(()=>$('gateInput').focus(),80);
+}
+async function tryGate(){
+  const v=$('gateInput').value.trim();
+  if(await hashPw(v)===DATA.gate.hash){try{sessionStorage.setItem(GATE_KEY,DATA.gate.hash);}catch(e){} $('gate').hidden=true;}
+  else{const g=$('gate');g.classList.remove('shake');void g.offsetWidth;g.classList.add('shake');$('gateInput').value='';toast('비밀번호가 달라요');}
+}
+$('gateOk').onclick=tryGate;$('gateInput').onkeydown=e=>{if(e.key==='Enter')tryGate();};
+$('gateBtn').onclick=()=>{$('gsPw').value='';$('gsHint').value=(DATA.gate&&DATA.gate.hint)||'힌트 : 계정 생일';$('gateSet').hidden=false;};
+$('gsCancel').onclick=()=>$('gateSet').hidden=true;
+$('gsSave').onclick=async()=>{
+  const v=$('gsPw').value.trim();if(!v)return toast('새 비밀번호를 적어 주세요');
+  DATA.gate={hash:await hashPw(v),hint:$('gsHint').value.trim()};
+  try{sessionStorage.setItem(GATE_KEY,DATA.gate.hash);}catch(e){}
+  touch();$('gateSet').hidden=true;toast('입장 비밀번호를 걸었어요. 💾 저장 후 올려 주세요');
+};
+$('gsOff').onclick=()=>{DATA.gate=null;touch();$('gateSet').hidden=true;toast('입장 잠금을 없앴어요');};
+
 /* 시작 */
 render();
-draftLoad().then(d=>{ if(d && d.savedAt>(DATA.savedAt||0)){ DATA=d; render(); } });
+showGate();
+draftLoad().then(d=>{ if(d && d.savedAt>(DATA.savedAt||0)){ DATA=d; render(); showGate(); } });
 </script>
 </body>
 </html>
