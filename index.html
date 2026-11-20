@@ -15,7 +15,8 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:#e9d9e0}
 body{font-family:'Pretendard',sans-serif;color:#4a3a44;padding:10px 0;overflow-x:hidden}
-#fit{transform-origin:top left}
+#fitOuter{width:100%;overflow:hidden;position:relative}
+#fit{transform-origin:top left;position:absolute;top:0;left:0}
 button{font-family:inherit}
 [hidden]{display:none!important}
 svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
@@ -29,6 +30,9 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 .titlebar .ctl span,.titlebar .ctl button{width:40px;height:34px;display:grid;place-items:center;color:#6b5a64;font-size:14px;background:none;border:0;cursor:pointer}
 .titlebar .ctl button{font-size:16px}
 .titlebar .ctl button:hover{background:#f0c6d6}
+.titlebar .ctl .adminBtn{width:auto;height:26px;margin:4px 8px 0 0;padding:0 12px;display:flex;align-items:center;gap:5px;border-radius:14px;
+  font-size:13px;font-weight:700;color:#fff;background:linear-gradient(#7c84cc,#5a60ad);box-shadow:0 2px 0 #3f448a}
+.titlebar .ctl .adminBtn:hover{background:linear-gradient(#8a92d8,#646ab8)}
 
 .adminbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 10px;background:#3b3570;color:#fff;font-size:13px}
 .adminbar b{font-family:'Nunito';letter-spacing:1px;margin-right:4px}
@@ -201,11 +205,11 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 </head>
 <body>
 
-<div id="fit"><div class="win">
+<div id="fitOuter"><div id="fit"><div class="win">
   <div class="titlebar">
     <span class="ico">✿</span>
     <span class="ttl" id="siteTitle">Dress Room</span>
-    <div class="ctl"><button id="lockBtn" title="관리자 모드"><i data-ic="lock"></i></button><span>—</span><span>☐</span><span>✕</span></div>
+    <div class="ctl"><button id="lockBtn" class="adminBtn" title="관리자 모드"><i data-ic="lock"></i>관리자</button><span>—</span><span>☐</span><span>✕</span></div>
   </div>
 
   <div class="adminbar" id="adminbar" hidden>
@@ -311,7 +315,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
   </div>
 </div>
 
-</div>
+</div></div>
 <div class="toast" id="toast"></div>
 <div class="gate" id="gate" hidden>
   <div class="gbox">
@@ -627,8 +631,8 @@ function fit(){
   const s=Math.min(1,(window.innerWidth-8)/1220,(window.innerHeight-20)/w.offsetHeight);
   box.style.transform=`scale(${s})`;
   box.style.width='1220px';
-  box.style.height=w.offsetHeight*s+'px';
-  box.style.marginLeft=Math.max(0,(window.innerWidth-1220*s)/2)+'px';
+  $('fitOuter').style.height=w.offsetHeight*s+'px';
+  box.style.left=Math.max(0,(document.documentElement.clientWidth-1220*s)/2)+'px';
 }
 window.addEventListener('resize',fit);window.addEventListener('load',fit);
 const _render=render;render=function(){_render();fit();};
@@ -664,6 +668,7 @@ $('gsOff').onclick=()=>{DATA.gate=null;touch();$('gateSet').hidden=true;toast('�
 
 /* 시작 */
 render();
+if(location.hash==="#admin") setTimeout(()=>$("lockBtn").click(),300);
 showGate();
 draftLoad().then(d=>{ if(d && d.savedAt>(DATA.savedAt||0)){ DATA=d; render(); showGate(); } });
 </script>
