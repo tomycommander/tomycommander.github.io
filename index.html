@@ -7,10 +7,10 @@
 <script>
 /* ★★★ 여기만 고치면 돼요 ★★★
    입장 비밀번호: 따옴표 안에 적으면 사이트에 들어올 때 비밀번호를 물어봐요. "" 처럼 비워 두면 잠금 없음 */
-const SITE_PASSWORD = "0413";
+const SITE_PASSWORD = "";
 const SITE_HINT = "힌트 : 계정 생일";
 /* 관리자 비밀번호 */
-const ADMIN_PASSWORD = "0426";
+const ADMIN_PASSWORD = "0413";
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
@@ -50,7 +50,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 .adminbar .note{font-size:11px;opacity:.75}
 
 /* ═════ 장면 ═════ */
-.scene{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 120px minmax(0,560px);grid-template-rows:1fr auto;gap:0 10px;padding:22px 16px 8px;min-height:700px}
+.scene{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 120px minmax(0,520px);grid-template-rows:1fr auto;gap:0 10px;padding:22px 16px 8px;min-height:700px}
 .room{position:absolute;inset:0;overflow:hidden;z-index:0;background:linear-gradient(180deg,#f6dbe5 0%,#f1cdda 55%,#eab9cb 100%)}
 .room .ceil{position:absolute;left:0;right:0;top:0;height:8%;background:linear-gradient(#f9e6ed,#f3d3df)}
 .room .lamp{position:absolute;left:30%;top:0;width:2px;height:12%;background:#e3c7d1}
@@ -67,10 +67,11 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 .room .floor{position:absolute;left:0;right:0;bottom:0;height:6%;background:#e6b7c8}
 
 /* 전신 + 프롬프트 카드 */
-.stage{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:10px;align-items:center}
+.stage{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:10px;align-items:center}
 .figure{position:relative;height:590px;display:flex;align-items:flex-end;justify-content:center}
-.figure img{position:relative;z-index:2;max-height:575px;max-width:100%;object-fit:contain;filter:drop-shadow(0 10px 10px rgba(110,50,80,.28));transition:opacity .2s,transform .35s}
-.figure img.flip{transform:scaleX(-1)}
+.figure img{position:absolute;left:0;bottom:8px;z-index:2;width:100%;height:calc(100% - 8px);object-fit:contain;object-position:center bottom;transform-origin:center bottom;
+  transform:translate(var(--x,0%),var(--y,0%)) scale(var(--s,1)) scaleX(var(--f,1));filter:drop-shadow(0 10px 10px rgba(110,50,80,.28));transition:opacity .2s,transform .25s}
+.figure img.flip{--f:-1}
 .figure .shadow{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:130px;height:18px;border-radius:50%;background:rgba(150,80,110,.25);filter:blur(4px)}
 
 .side{display:flex;flex-direction:column;gap:10px;align-self:center}
@@ -100,6 +101,8 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 .edit .gsel button{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;border:1px solid #e3c6d2;background:#fff;border-radius:8px;padding:5px;font-size:13px;cursor:pointer;color:#7a5a6a}
 .edit .gsel button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
 .edit .row{display:flex;gap:6px;margin-top:9px}
+.edit .fitrow{display:flex;align-items:center;gap:6px;font-size:11px;color:#9a7486}
+.edit .fitrow input{flex:1;accent-color:#6f78c2}
 .edit .row button{flex:1;border:0;border-radius:8px;padding:7px 4px;font-size:12px;font-weight:700;cursor:pointer;background:#f3e3ea;color:#6b4658}
 .edit .row button.del{background:#fde0e0;color:#b2414d}
 
@@ -277,6 +280,9 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
           <label>성별</label><div class="gsel"><button data-g="f"><i data-ic="female"></i>여자</button><button data-g="m"><i data-ic="male"></i>남자</button></div>
           <label>메모</label><input id="eMemo" placeholder="짧은 메모 (안 써도 돼요)">
           <div class="row"><button id="eSwap">📷 사진 바꾸기</button></div>
+          <label>사진 크기·위치 맞추기</label>
+          <div class="fitrow"><span>작게</span><input type="range" id="fitS" min="40" max="220" step="2"><span>크게</span></div>
+          <div class="row"><button id="fitL">◀</button><button id="fitU">▲</button><button id="fitD">▼</button><button id="fitR">▶</button><button id="fitReset">처음대로</button></div>
           <div class="row"><button id="eLeft">◀ 앞으로</button><button id="eRight">뒤로 ▶</button><button class="del" id="eDel">삭제</button></div>
         </div>
       </div>
@@ -515,6 +521,8 @@ function render(){
   const o=cur(), img=$('full');
   if(o){ if(img.dataset.id!=String(o.id)||img.dataset.src!==o.img){img.style.opacity=0;setTimeout(()=>{img.src=src(o);img.style.opacity=1;},120);img.dataset.id=o.id;img.dataset.src=o.img;} }
   else { img.removeAttribute('src'); img.dataset.id=''; }
+  const ft=(o&&o.fit)||{s:100,x:0,y:0};
+  img.style.setProperty('--s',ft.s/100);img.style.setProperty('--x',ft.x+'%');img.style.setProperty('--y',ft.y+'%');
   $('pname').textContent=o?o.name:"의상이 없어요";
   $('pmemo').textContent=o?(o.memo||o.cat||""):(S.admin?"＋ 의상 추가를 눌러 주세요":"");
   $('ptext').textContent=o?o.prompt:"";
@@ -528,6 +536,7 @@ function render(){
   if(ed){
     if(document.activeElement!==$('eName')) $('eName').value=o.name;
     if(document.activeElement!==$('eMemo')) $('eMemo').value=o.memo;
+    $('fitS').value=(o.fit&&o.fit.s)||100;
     if(document.activeElement!==$('ePrompt')) $('ePrompt').value=o.prompt;
     document.querySelectorAll('.gsel button').forEach(b=>b.classList.toggle('on',b.dataset.g===o.gender));
     $('catWrap').hidden=S.part!=='outfit';
@@ -617,6 +626,10 @@ function move(d){
   const a=DATA.outfits.indexOf(o),b=DATA.outfits.indexOf(t);[DATA.outfits[a],DATA.outfits[b]]=[DATA.outfits[b],DATA.outfits[a]];
   S.page=Math.floor(list().indexOf(o)/PER);touch();render();
 }
+function nudge(k,d){const o=cur();if(!o)return;o.fit=o.fit||{s:100,x:0,y:0};o.fit[k]=Math.max(-60,Math.min(60,o.fit[k]+d));touch();render();}
+$('fitL').onclick=()=>nudge('x',-3);$('fitR').onclick=()=>nudge('x',3);$('fitU').onclick=()=>nudge('y',-3);$('fitD').onclick=()=>nudge('y',3);
+$('fitS').oninput=e=>{const o=cur();if(!o)return;o.fit=o.fit||{s:100,x:0,y:0};o.fit.s=+e.target.value;touch();render();};
+$('fitReset').onclick=()=>{const o=cur();if(!o)return;delete o.fit;touch();render();};
 $('eLeft').onclick=()=>move(-1);$('eRight').onclick=()=>move(1);
 $('eDel').onclick=()=>{const o=cur();if(!confirm(`'${o.name}' 의상을 지울까요?`))return;DATA.outfits=DATA.outfits.filter(x=>x!==o);S.sel[K()]=null;touch();render();};
 
