@@ -426,14 +426,14 @@ const svg=n=>`<svg class="i" viewBox="0 0 24 24">${IC[n]||IC.hanger}</svg>`;
 function paintIcons(root=document){root.querySelectorAll('i[data-ic]').forEach(e=>{e.outerHTML=svg(e.dataset.ic);});}
 
 /* 분류 목록 (이름 : 아이콘) */
-const CATS_F=[["원피스","dress"],["상의","tee"],["바지","pants"],["치마","skirt"],["아우터","jacket"],["정장","bowtie"],["잠옷","moon"],["신발","shoe"],["소품","bag"],["기타","hanger"]];
+const CATS_F=[["원피스","dress"],["상의","tee"],["바지","pants"],["치마","skirt"],["기타","hanger"]];
 /* 남자 옷은 스타일로 나눠요 */
-const CATS_M=[["캐주얼","tee"],["스트릿","cap"],["댄디","tie"],["빈티지","glasses"]];
+const CATS_M=[["캐주얼","tee"],["스트릿","cap"],["댄디","tie"],["빈티지","glasses"],["기타","hanger"]];
 const catsFor=g=>g==="m"?CATS_M:CATS_F;
 const CATS=CATS_F.concat(CATS_M);
 /* 예전 분류 이름은 새 이름으로 바꿔요 */
-const CAT_RENAME={"하의":"바지","교복":"기타"};
-const CAT_RENAME_M={"상의":"캐주얼","하의":"캐주얼","바지":"캐주얼","치마":"캐주얼","원피스":"캐주얼","아우터":"캐주얼","정장":"댄디","교복":"댄디","프레피":"댄디","잠옷":"캐주얼","신발":"캐주얼","소품":"캐주얼","스포티":"캐주얼","다크":"스트릿","기타":"캐주얼"};
+const CAT_RENAME={"하의":"바지","교복":"기타","아우터":"기타","정장":"기타","잠옷":"기타","신발":"기타","소품":"기타"};
+const CAT_RENAME_M={"상의":"캐주얼","하의":"캐주얼","바지":"캐주얼","치마":"기타","원피스":"기타","아우터":"캐주얼","정장":"댄디","교복":"댄디","프레피":"댄디","잠옷":"기타","신발":"기타","소품":"기타","스포티":"캐주얼","다크":"스트릿"};
 const catIcon=c=>(CATS.find(x=>x[0]===c)||[0,"hanger"])[1];
 
 function sample(){
