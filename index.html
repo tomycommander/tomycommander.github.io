@@ -508,7 +508,8 @@ function render(){
   /* 분류 아이콘 줄: 이 성별에 있는 분류만 */
   const used=[...new Set(inG().map(o=>o.cat||"기타"))];
   const CG=catsFor(S.g);
-  const order=CG.map(c=>c[0]).filter(c=>used.includes(c)).concat(used.filter(c=>!CG.some(x=>x[0]===c)));
+  /* 비어 있는 분류도 항상 다 보여요 */
+  const order=CG.map(c=>c[0]).concat(used.filter(c=>!CG.some(x=>x[0]===c)));
   if(S.cat!=="전체"&&!order.includes(S.cat)) S.cat="전체";
   $('cats').innerHTML="";
   [["전체","hanger"],...order.map(c=>[c,catIcon(c)])].forEach(([c,ic])=>{
