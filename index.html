@@ -68,11 +68,17 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 
 /* 전신 + 프롬프트 카드 */
 .stage{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:10px;align-items:center}
-.figure{position:relative;height:590px;display:flex;align-items:flex-end;justify-content:center}
-.figure img{position:absolute;left:0;bottom:8px;z-index:2;width:100%;height:calc(100% - 8px);object-fit:contain;object-position:center bottom;transform-origin:center bottom;
-  transform:translate(var(--x,0%),var(--y,0%)) scale(var(--s,1)) scaleX(var(--f,1));filter:drop-shadow(0 10px 10px rgba(110,50,80,.28));transition:opacity .2s,transform .25s}
+.figure{position:relative;height:590px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.frm{width:min(270px,100%);height:490px;padding:10px;border-radius:18px;background:#fff;box-shadow:0 0 0 4px #e9b5c8,0 0 0 8px #fbe4ec,0 10px 22px rgba(130,50,85,.28)}
+.frm .win2{position:relative;width:100%;height:100%;border-radius:10px;overflow:hidden;background:linear-gradient(#f9f3fb,#f1e6f3)}
+.figure img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;transform-origin:center top;
+  transform:translate(var(--x,0%),var(--y,0%)) scale(var(--s,1)) scaleX(var(--f,1));transition:opacity .2s,transform .25s}
 .figure img.flip{--f:-1}
-.figure .shadow{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:130px;height:18px;border-radius:50%;background:rgba(150,80,110,.25);filter:blur(4px)}
+.stand{display:flex;align-items:center;gap:8px}
+.stand button{border:0;background:none;font-size:30px;color:#e27fa6;cursor:pointer;display:grid}
+.stand button svg{stroke-width:2.6}
+.disc{min-width:170px;max-width:220px;height:36px;padding:0 18px;border-radius:50%;display:grid;place-items:center;font-family:'Nunito','Pretendard';font-weight:900;font-size:14px;color:#7a2150;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:radial-gradient(ellipse at 50% 35%,#fff 0 30%,#f4c9d8 60%,#d996b0);box-shadow:0 5px 0 #c07893}
 
 .side{display:flex;flex-direction:column;gap:10px;align-self:center}
 .card{background:rgba(255,255,255,.88);border-radius:20px;padding:14px 14px 12px;box-shadow:0 0 0 3px #fff,0 0 0 5px var(--p3),0 10px 22px rgba(140,60,95,.22);backdrop-filter:blur(4px)}
@@ -251,7 +257,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 
     <!-- 전신 + 프롬프트 카드 -->
     <div class="stage">
-      <div class="figure"><div class="shadow"></div><img id="full" alt=""></div>
+      <div class="figure"><div class="frm"><div class="win2"><img id="full" alt=""></div></div><div class="stand"><button id="rotL" title="돌려 보기"><i data-ic="rotL"></i></button><span class="disc" id="discName"></span><button id="rotR" title="돌려 보기"><i data-ic="rotR"></i></button></div></div>
       <div class="side">
         <div class="card">
           <div class="tag">PROMPT</div>
@@ -324,7 +330,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
     <!-- 아래 버튼 -->
     <div class="bottom">
       <button class="rbtn" id="home" title="처음으로"><i data-ic="exit"></i></button>
-      <div class="ped"><button id="rotL"><i data-ic="rotL"></i></button><div class="man"><i data-ic="person"></i></div><button id="rotR"><i data-ic="rotR"></i></button></div>
+      <div></div>
       <div class="undo"><button class="rbtn" id="prevO" title="이전 의상"><i data-ic="undo"></i></button><button class="rbtn" id="nextO" title="다음 의상"><i data-ic="redo"></i></button></div>
     </div>
     <div class="sticker" id="sticker">dress up ♡</div>
@@ -524,6 +530,7 @@ function render(){
   const ft=(o&&o.fit)||{s:100,x:0,y:0};
   img.style.setProperty('--s',ft.s/100);img.style.setProperty('--x',ft.x+'%');img.style.setProperty('--y',ft.y+'%');
   $('pname').textContent=o?o.name:"의상이 없어요";
+  $('discName').textContent=o?o.name:'';
   $('pmemo').textContent=o?(o.memo||o.cat||""):(S.admin?"＋ 의상 추가를 눌러 주세요":"");
   $('ptext').textContent=o?o.prompt:"";
 
