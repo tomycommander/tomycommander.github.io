@@ -241,8 +241,15 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 /* 가로 사진: 작은 칸은 두 칸 너비로, 큰 칸은 사진 모양에 맞춰 줄어들어요 */
 .pzth.wide{grid-column:span 2}
 .pzth.wide img.full{object-position:center}
-.pzbig.wide{flex:none;width:100%;max-height:40%}
-.pzbig.wide img.full{object-position:center}
+.pzbig.wide{flex:0 1 auto;width:100%;max-height:48%}
+.pzbig img.fg{cursor:zoom-in}
+.pzbig .zoom{position:absolute;right:6px;bottom:6px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;background:rgba(255,255,255,.85);box-shadow:0 1px 4px rgba(0,0,0,.2);pointer-events:none}
+.pzmemo{flex:none;font-size:11.5px;line-height:1.4;color:#5d5f9e;background:rgba(255,255,255,.75);border-radius:9px;padding:4px 9px;box-shadow:inset 0 0 0 1.5px #c3c7ee;overflow-wrap:anywhere;white-space:pre-wrap}
+.pzmemo input{width:100%;border:0;background:none;outline:none;font:inherit;color:inherit}
+.pzview{position:fixed;inset:0;z-index:90;background:rgba(20,16,30,.88);display:grid;place-items:center;cursor:zoom-out}
+.pzview img{max-width:96vw;max-height:94vh;object-fit:contain;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.pzview button{position:fixed;right:14px;top:14px;width:40px;height:40px;border-radius:50%;border:0;font-size:18px;color:#fff;background:rgba(255,255,255,.2);cursor:pointer}
+
 .pzsec{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:5px}
 .pzsec button{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:left;line-height:1.3;border:0;border-radius:14px;padding:3px 9px;font-size:11px;font-weight:800;cursor:pointer;background:#eef0fb;color:#5d64b5;box-shadow:inset 0 0 0 1.5px #c3c7ee}
 .pzsec button.on{background:#5d64b5;color:#fff;box-shadow:none}
@@ -253,7 +260,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
 .pzlbl{text-align:center;margin-top:5px;font-size:11px;font-weight:800;color:#7a4a64;letter-spacing:1px}
 .pzph{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:6px;color:#8d93cf;font-size:46px;text-align:center}
 .pzph small{font-size:12px;font-weight:700;padding:0 12px;line-height:1.4}
-.pzinfo{flex:0 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;background:rgba(255,255,255,.9);border-radius:12px;padding:8px 9px;box-shadow:0 0 0 2px #b4b8e6}
+.pzinfo{flex:0 0 auto;max-height:72%;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;background:rgba(255,255,255,.9);border-radius:12px;padding:8px 9px;box-shadow:0 0 0 2px #b4b8e6}
 .pzinfo .n{display:flex;align-items:center;gap:6px;font-weight:800;font-size:14px;color:var(--navy);margin-bottom:5px}
 .pzinfo .n span:last-child{flex:1;line-height:1.3;overflow-wrap:anywhere}
 .pzk{font-size:10.5px;font-weight:800;color:#fff;background:#79b7bd;border-radius:10px;padding:2px 8px;white-space:nowrap}
@@ -438,6 +445,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
     <div class="pzbar">Prompt Share<button id="pzClose" title="닫기">✕</button></div>
     <div class="pzbody">
       <div class="pzleft">
+        <div class="pzmemo" id="pzMemo" hidden=""></div>
         <div class="pzbig" id="pzBig"></div>
         <div class="pzinfo" id="pzInfo"></div>
       </div>
@@ -449,6 +457,7 @@ svg.i{width:1em;height:1em;display:block;fill:none;stroke:currentColor;stroke-wi
     </div>
     <div class="pzok"><button id="pzOk" title="프롬프트 복사"><i data-ic="check"></i></button><button id="pzNo" title="닫기"><i data-ic="cross"></i></button></div>
   </div>
+  <div class="pzview" id="pzView" hidden=""><img id="pzViewImg" alt=""><button id="pzViewX" title="닫기">✕</button></div>
   <input type="file" id="pzAddFile" accept="image/*" multiple="" hidden="">
   <input type="file" id="pzSwapFile" accept="image/*" hidden="">
 </div>
@@ -701,11 +710,11 @@ $('sticker').oninput=()=>{DATA.sticker=$('sticker').textContent;touch();};
 
 /* 사진을 알맞은 크기로 줄여요 + 숨은 정보(메타데이터) 지우기
    투명한 부분이 없으면 JPG, 있으면 WebP(안 되는 기기는 작은 PNG)로 저장해요 */
-function shrink(file,maxH=1000){
+function shrink(file,maxH=1000,maxW=720){
   return new Promise((res,rej)=>{
     const r=new FileReader();
     r.onload=()=>{const im=new Image();im.onload=()=>{
-      const draw=mh=>{const s=Math.min(1,mh/im.height,720/im.width);const c=document.createElement('canvas');
+      const draw=mh=>{const s=Math.min(1,mh/im.height,(maxW*mh/maxH)/im.width);const c=document.createElement('canvas');
         c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c;};
       let c=draw(maxH);
       const px=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
@@ -865,7 +874,13 @@ function pzRender(){
   /* 왼쪽 큰 사진 + 글 */
   const BG=$('pzBig');const wb=!!(x&&pzWide(x));BG.classList.toggle('wide',wb);BG.style.aspectRatio=wb?String(Math.min(x.ar,2.2)):'';
   BG.innerHTML=!x?`<div class="pzph">${svg('sparkle')}<small>아직 없어요${S.admin?'<br>＋ 사진으로 추가를 눌러 주세요':''}</small></div>`
-    :x.img?(wb?`<img class="full" src="${x.img}" alt="">`:`<img class="fg" src="${x.img}" alt="">`):`<div class="pzph">${svg('sparkle')}<small>사진이 아직 없어요${S.admin?'<br>아래 📷 사진 넣기':''}</small></div>`;
+    :x.img?`<img class="fg" src="${x.img}" alt=""><span class="zoom">🔍</span>`:`<div class="pzph">${svg('sparkle')}<small>사진이 아직 없어요${S.admin?'<br>아래 📷 사진 넣기':''}</small></div>`;
+  const fgi=BG.querySelector('img.fg');if(fgi)fgi.onclick=()=>{$('pzViewImg').src=x.img;$('pzView').hidden=false;};
+  /* 사진 위 작은 메모 */
+  const M=$('pzMemo');
+  if(!x){M.hidden=true;}
+  else if(S.admin){M.hidden=false;M.innerHTML='<input placeholder="✎ 메모 (사진 위에 작게 보여요)">';const mi=M.querySelector('input');mi.value=x.memo||'';mi.oninput=e=>{x.memo=e.target.value;touch();};}
+  else{M.hidden=!(x.memo||'').trim();M.textContent=x.memo||'';}
   const I=$('pzInfo');
   if(!x){I.innerHTML='<div class="t">고른 게 없어요</div>';return;}
   pzChars(x);
@@ -905,6 +920,7 @@ function pzRender(){
   }
 }
 $('pzOpen').onclick=()=>{$('pzModal').hidden=false;pzRender();};
+$('pzView').onclick=()=>{$('pzView').hidden=true;};
 $('pzClose').onclick=$('pzNo').onclick=()=>$('pzModal').hidden=true;
 $('pzOk').onclick=pzCopy;
 $('pzModal').onclick=e=>{if(e.target===$('pzModal'))$('pzModal').hidden=true;};
@@ -923,11 +939,11 @@ function pzMeasure(items){
 function pzPages(items){const out=[[]];let c=0;items.forEach(o=>{const n=pzWide(o)?2:1;if(c+n>8){out.push([]);c=0;}out[out.length-1].push(o);c+=n;});return out;}
 $('pzAddFile').onchange=async e=>{
   const files=[...e.target.files];if(!files.length)return;toast("사진 올리는 중…");const P=pzData();let last;
-  for(const f of files){const img=await shrink(f);const id=Math.max(0,...P.map(x=>x.id))+1;
+  for(const f of files){const img=await shrink(f,1200,1200);const id=Math.max(0,...P.map(x=>x.id))+1;
     last={id,name:f.name.replace(/\.[^.]+$/,""),prompt:"",img,ar:Math.round(await pzAR(img)*100)/100};P.unshift(last);}
   e.target.value="";PZ.sel=last.id;PZ.page=0;touch();pzRender();toast(files.length+"개 추가했어요! 이름과 프롬프트를 적어 주세요");
 };
-$('pzSwapFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const x=pzCur();if(!x)return;x.img=await shrink(f);x.ar=Math.round(await pzAR(x.img)*100)/100;e.target.value="";PZ.jump=true;touch();pzRender();toast("사진을 넣었어요");};
+$('pzSwapFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;const x=pzCur();if(!x)return;x.img=await shrink(f,1200,1200);x.ar=Math.round(await pzAR(x.img)*100)/100;e.target.value="";PZ.jump=true;touch();pzRender();toast("사진을 넣었어요");};
 window.addEventListener('resize',()=>{if(!$('pzModal').hidden)pzFit();});
 paintIcons($('pzModal'));
 const _render2=render;render=function(){_render2();pzRender();};
